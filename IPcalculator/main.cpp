@@ -14,6 +14,8 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, IN
 	return 0;
 }
 
+void PrintInfo(HWND hwnd);
+
 
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
@@ -108,7 +110,7 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			DWORD dwIPaddress = 0;
 			DWORD dwIPmask = 0;
 			DWORD dwIPPrefix = 0;
-			if (HIWORD(wParam)==EN_CHANGE)
+			if (HIWORD(wParam) == EN_CHANGE)
 			{
 				CHAR szIPPrefix[3] = {};
 				SendMessage(hIPPrefix, WM_GETTEXT, 3, (LPARAM)szIPPrefix);
@@ -119,7 +121,14 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 		}
 		break;
+		case IDC_BUTTON_RESET:
+			SendMessage(hIPaddress, IPM_CLEARADDRESS, 0, 0);
+			SendMessage(HIPmask, IPM_CLEARADDRESS, 0, 0);
+			SendMessage(hIPPrefix, WM_SETTEXT, 0, (LPARAM)"");
+			SetFocus(GetDlgItem(hwnd, IDC_IP_ADDRESS));
+			break;
 		case IDOK:
+			PrintInfo(hwnd);
 			break;
 		case IDCANCEL:EndDialog(hwnd, 0);
 		}
@@ -128,4 +137,50 @@ BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	case WM_CLOSE: EndDialog(hwnd, 0);
 	}
 	return FALSE;
+}
+LPSTR FormatAddress(CHAR szBuffer[], CONST CHAR szMessage[], DWORD dwIPaddress)
+{
+	sprintf
+	(
+		szBuffer, 
+		"%s%i.%i.%i.%i",
+		szMessage,
+		FIRST_IPADDRESS(dwIPaddress),
+		SECOND_IPADDRESS(dwIPaddress),
+		THIRD_IPADDRESS(dwIPaddress),
+		FOURTH_IPADDRESS(dwIPaddress)
+	);
+	return szBuffer;
+}
+LPSTR FormatCount(CHAR szBuffer[], CONST CHAR szMessage[], DWORD dwCount)
+{
+	sprintf(szBuffer, "%s%i", szMessage, dwCount);
+	return szBuffer;
+}
+void PrintInfo(HWND hwnd)
+{
+	HWND hIPaddress = GetDlgItem(hwnd, IDC_IP_ADDRESS);
+	HWND hIPmask = GetDlgItem(hwnd, IDC_IP_MASK);
+	HWND hStaticInfo = GetDlgItem(hwnd, IDC_STATIC_INFO);
+	DWORD dwIpaddress = 0;
+	DWORD dwIPmask = 0;
+	CHAR szInfo[1024] = {};
+	CHAR szNETaddressBuffer[1024] = {};
+	CHAR szBroadCastBuffer[1024] = {};
+	CHAR szIPcontBuffer[1024] = {};
+	CHAR szHostCountBuffer[1024] = {};
+	SendMessage(hIPaddress, IPM_GETADDRESS, 0, (LPARAM)&dwIpaddress);
+	SendMessage(hIPmask, IPM_GETADDRESS, 0, (LPARAM)&dwIPmask);
+	DWORD dwNetworAddress = dwIpaddress & dwIPmask;
+	DWORD dwBroadCastaddress = dwIpaddress | ~dwIPmask;
+	sprintf
+	(
+		szInfo,
+		"%s\n%s\n%s\n%s",
+		FormatAddress(szNETaddressBuffer, "Адрес сети:\t\t\t\t", dwNetworAddress),
+		FormatAddress(szBroadCastBuffer, "Широковещательный адрес:\t\t", dwBroadCastaddress),
+		FormatCount(szIPcontBuffer, "Количество IP - адресов:\t\t", dwBroadCastaddress - dwNetworAddress + 1),
+		FormatCount(szHostCountBuffer, "Количество улов:\t\t\t", dwBroadCastaddress - dwNetworAddress - 1)
+	);
+	SendMessage(hStaticInfo, WM_SETTEXT, 0, (LPARAM)szInfo);
 }
