@@ -1,4 +1,4 @@
-#define _CRT_SECURE_NO_WARNINGS
+п»ї#define _CRT_SECURE_NO_WARNINGS
 #include<Windows.h>
 #include"resource.h"
 #include<CommCtrl.h>
@@ -213,12 +213,12 @@ void PrintInfo(HWND hwnd)
 	(
 		szInfo,
 		"%s\n%s%s\n%s%s\n%s\n%s\n%s",
-		FormatAddress(szNETaddressBuffer, "Адрес сети:\t\t\t\t", dwNetworAddress),
+		FormatAddress(szNETaddressBuffer, "РђРґСЂРµСЃ СЃРµС‚Рё:\t\t\t\t", dwNetworAddress),
 		"IP: \t", FormatAddressToBit(ipv4StrIP, dwIpaddress),
 		"Mask: \t", FormatAddressToBit(ipv4StrMask, dwIPmask),
-		FormatAddress(szBroadCastBuffer, "Широковещательный адрес:\t\t", dwBroadCastaddress),
-		FormatCount(szIPcontBuffer, "Количество IP - адресов:\t\t", dwBroadCastaddress - dwNetworAddress + 1),
-		FormatCount(szHostCountBuffer, "Количество улов:\t\t\t", dwBroadCastaddress - dwNetworAddress - 1)
+		FormatAddress(szBroadCastBuffer, "РЁРёСЂРѕРєРѕРІРµС‰Р°С‚РµР»СЊРЅС‹Р№ Р°РґСЂРµСЃ:\t\t", dwBroadCastaddress),
+		FormatCount(szIPcontBuffer, "РљРѕР»РёС‡РµСЃС‚РІРѕ IP - Р°РґСЂРµСЃРѕРІ:\t\t", dwBroadCastaddress - dwNetworAddress + 1),
+		FormatCount(szHostCountBuffer, "РљРѕР»РёС‡РµСЃС‚РІРѕ СѓР»РѕРІ:\t\t\t", dwBroadCastaddress - dwNetworAddress - 1)
 	);
 	//delete[] szBitBufIP;
 	//delete[] szBitBufMask;
