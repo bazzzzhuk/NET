@@ -1,16 +1,24 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include<Windows.h>
-#include<iostream>
-#include<cstdio>
 #include"resource.h"
 #include<CommCtrl.h>
+#include <bitset>
+#include<iostream>
+#include<cstdio>
+#include <string>
 
 
 BOOL CALLBACK DlgProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInst, LPSTR lpCmdLine, INT nCmdShow)
 {
+	/*WSADATA wsaData;
+	if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+		printf("WSAStartup failed\n");
+		return 1;
+	}*/
 	DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DIALOG_MAIN), NULL, (DLGPROC)DlgProc, NULL);
+	//WSACleanup();
 	return 0;
 }
 
@@ -142,7 +150,7 @@ LPSTR FormatAddress(CHAR szBuffer[], CONST CHAR szMessage[], DWORD dwIPaddress)
 {
 	sprintf
 	(
-		szBuffer, 
+		szBuffer,
 		"%s%i.%i.%i.%i",
 		szMessage,
 		FIRST_IPADDRESS(dwIPaddress),
@@ -152,6 +160,23 @@ LPSTR FormatAddress(CHAR szBuffer[], CONST CHAR szMessage[], DWORD dwIPaddress)
 	);
 	return szBuffer;
 }
+LPSTR FormatAddressToBit(CHAR* szBUF, DWORD dwIPaddress)
+{
+	std::string buf = "";
+	std::string bitIPaddress = std::bitset<32>(dwIPaddress).to_string();
+	for (int i = 0; i < bitIPaddress.size()+1; i++)
+	{
+		if (i % 8 == 0 && i != 0)
+		{
+			buf = buf + ".";
+			buf = buf + bitIPaddress[i];
+		}
+		else buf = buf + bitIPaddress[i];
+	}
+	buf = buf.substr(0,35);
+	strcpy(szBUF, buf.c_str());
+	return szBUF;
+}
 LPSTR FormatCount(CHAR szBuffer[], CONST CHAR szMessage[], DWORD dwCount)
 {
 	sprintf(szBuffer, "%s%i", szMessage, dwCount);
@@ -159,6 +184,8 @@ LPSTR FormatCount(CHAR szBuffer[], CONST CHAR szMessage[], DWORD dwCount)
 }
 void PrintInfo(HWND hwnd)
 {
+
+
 	HWND hIPaddress = GetDlgItem(hwnd, IDC_IP_ADDRESS);
 	HWND hIPmask = GetDlgItem(hwnd, IDC_IP_MASK);
 	HWND hStaticInfo = GetDlgItem(hwnd, IDC_STATIC_INFO);
@@ -173,14 +200,27 @@ void PrintInfo(HWND hwnd)
 	SendMessage(hIPmask, IPM_GETADDRESS, 0, (LPARAM)&dwIPmask);
 	DWORD dwNetworAddress = dwIpaddress & dwIPmask;
 	DWORD dwBroadCastaddress = dwIpaddress | ~dwIPmask;
+	/*
+	struct in_addr ipv4Addr;
+	FormatAddressToBit(szBitBuf, dwIpaddress);
+	int result = InetPton(AF_INET, ipv4Str, &ipv4Addr);
+	*/
+	CHAR szBitBufIP[48] = {};
+	CHAR* ipv4StrIP = szBitBufIP;
+	CHAR szBitBufMask[48] = {};
+	CHAR* ipv4StrMask = szBitBufMask;
 	sprintf
 	(
 		szInfo,
-		"%s\n%s\n%s\n%s",
+		"%s\n%s%s\n%s%s\n%s\n%s\n%s",
 		FormatAddress(szNETaddressBuffer, "Адрес сети:\t\t\t\t", dwNetworAddress),
+		"IP: \t", FormatAddressToBit(ipv4StrIP, dwIpaddress),
+		"Mask: \t", FormatAddressToBit(ipv4StrMask, dwIPmask),
 		FormatAddress(szBroadCastBuffer, "Широковещательный адрес:\t\t", dwBroadCastaddress),
 		FormatCount(szIPcontBuffer, "Количество IP - адресов:\t\t", dwBroadCastaddress - dwNetworAddress + 1),
 		FormatCount(szHostCountBuffer, "Количество улов:\t\t\t", dwBroadCastaddress - dwNetworAddress - 1)
 	);
+	//delete[] szBitBufIP;
+	//delete[] szBitBufMask;
 	SendMessage(hStaticInfo, WM_SETTEXT, 0, (LPARAM)szInfo);
 }
