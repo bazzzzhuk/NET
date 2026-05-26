@@ -164,16 +164,13 @@ LPSTR FormatAddressToBit(CHAR* szBUF, DWORD dwIPaddress)
 {
 	std::string buf = "";
 	std::string bitIPaddress = std::bitset<32>(dwIPaddress).to_string();
-	for (int i = 0; i < bitIPaddress.size()+1; i++)
+	for (int i = 0; i < bitIPaddress.size() + 1; i++)
 	{
-		if (i % 8 == 0 && i != 0)
-		{
-			buf = buf + ".";
-			buf = buf + bitIPaddress[i];
-		}
+		if (i % 8 == 0 && i != 0) { buf = buf + "."; buf = buf + bitIPaddress[i]; }
+		else if (i % 4 == 0 && i != 0) { buf = buf + " "; buf = buf + bitIPaddress[i]; }
 		else buf = buf + bitIPaddress[i];
 	}
-	buf = buf.substr(0,35);
+	buf = buf.substr(0, 39);
 	strcpy(szBUF, buf.c_str());
 	return szBUF;
 }
